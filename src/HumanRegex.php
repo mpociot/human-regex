@@ -409,6 +409,21 @@ class HumanRegex
     }
 
     /**
+     * Replace a regular expression matches on
+     * a text with the given closure result.
+     *
+     * @param string $text
+     * @param Closure $callback
+     * @return string
+     */
+    public function replace(string $text, Closure $callback) : string
+    {
+        return preg_replace_callback($this->getRegex(), function ($matches) use ($callback) {
+            return call_user_func_array($callback, $matches);
+        },  $text);
+    }
+
+    /**
      * @param $value string|Closure
      * @return string
      */

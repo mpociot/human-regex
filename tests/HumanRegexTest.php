@@ -438,4 +438,19 @@ class ExampleTest extends \PHPUnit_Framework_TestCase
         $this->assertSame('bar', $matches[2]);
     }
 
+    /** @test */
+    public function it_can_replace()
+    {
+        $this->regex
+            ->digits()->exactly(4);
+
+        $text = 'April fools day is 04/01/2016';
+
+        $replaced = $this->regex->replace($text, function ($year) {
+            return $year + 1;
+        });
+
+        $this->assertSame('April fools day is 04/01/2017', $replaced);
+    }
+
 }
