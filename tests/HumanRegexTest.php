@@ -151,20 +151,6 @@ class ExampleTest extends \PHPUnit_Framework_TestCase
     }
 
     /** @test */
-    public function it_can_use_or_without_either()
-    {
-        $this->regex
-            ->find('foo')
-            ->or('baz')
-            ->or('bar');
-
-        $this->assertTrue($this->regex->matches('foo'));
-        $this->assertTrue($this->regex->matches('bar'));
-        $this->assertTrue($this->regex->matches('baz'));
-        $this->assertFalse($this->regex->matches('No'));
-    }
-
-    /** @test */
     public function it_can_maybe_find_a_string_with_closure()
     {
         $this->regex
@@ -451,6 +437,43 @@ class ExampleTest extends \PHPUnit_Framework_TestCase
         });
 
         $this->assertSame('April fools day is 04/01/2017', $replaced);
+    }
+
+    /** @test */
+    public function it_can_match_anything_but()
+    {
+        $this->regex
+            ->global()
+            ->anythingBut(' ')
+            ->find('.doc');
+
+        $text = 'Lorem ipsum dolor sit amet.doc, consetetur sadipscing.doc elitr';
+
+        $this->assertTrue($this->regex->matches($text));
+
+        $matches = $this->regex->findMatches($text);
+
+        $this->assertSame('amet.doc', $matches[0]);
+        $this->assertSame('sadipscing.doc', $matches[1]);
+    }
+
+    /** @test */
+    public function it_can_match_any_of()
+    {
+        $this->regex
+            ->global()
+            ->letter()->atLeast(2)
+            ->anyOf(['.jpg', '.png', '.gif']);
+
+        $text = 'amet.jpg, consetetur sadipscing.png elitr.gif';
+
+        $this->assertTrue($this->regex->matches($text));
+
+        $matches = $this->regex->findMatches($text);
+
+        $this->assertSame('amet.jpg', $matches[0]);
+        $this->assertSame('sadipscing.png', $matches[1]);
+        $this->assertSame('elitr.gif', $matches[2]);
     }
 
 }

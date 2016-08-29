@@ -9,6 +9,9 @@ class HumanRegex
     /** @var string */
     protected $modifiers = "m";
 
+    /** @var bool */
+    protected $globalMatch = false;
+
     /** @var string */
     protected $prefixes = "";
 
@@ -52,7 +55,7 @@ class HumanRegex
     protected function checkParenthesis($value = '')
     {
         if (strpos($this->lastValue, ')|(?:') === 0 && (strpos($value, '(') === 0 || $value === '')) {
-            $this->add(')');
+            $this->add('))');
         }
     }
 
@@ -66,6 +69,18 @@ class HumanRegex
     public function find($value) : HumanRegex
     {
         return $this->then($value);
+    }
+
+    /**
+     * Active global matches.
+     *
+     * @return $this
+     */
+    public function global()
+    {
+        $this->globalMatch = true;
+
+        return $this;
     }
 
     /**
@@ -113,6 +128,21 @@ class HumanRegex
     }
 
     /**
+     * Matches anything except for the given value.
+     *
+     * @param string|Closure $value
+     * @return HumanRegex
+     */
+    public function anythingBut($value) : HumanRegex
+    {
+        if (is_string($value) && strlen($value) === 1) {
+            return $this->add('[^'.$this->getValue($value).']')->atLeast(1);
+        }
+
+        return $this->notAhead($this->getValue($value))->once()->anything();
+    }
+
+    /**
      * Alias for either()
      *
      * @param string|Closure $value
@@ -140,7 +170,7 @@ class HumanRegex
      */
     public function either($value) : HumanRegex
     {
-        return $this->add('(?:' . $this->getValue($value));
+        return $this->add('(?:(?:' . $this->getValue($value));
     }
 
     /**
@@ -184,7 +214,7 @@ class HumanRegex
      */
     public function atLeast(int $times) : HumanRegex
     {
-        return $this->limit($times, $times - 1);
+        return $this->limit($times, -1);
     }
 
     /**
@@ -352,6 +382,24 @@ class HumanRegex
     }
 
     /**
+     * Matches any of the given values.
+     *
+     * @param array $values
+     * @return HumanRegex
+     */
+    public function anyOf(array $values) : HumanRegex
+    {
+        $firstValue = array_shift($values);
+        $this->findEither($firstValue);
+
+        foreach ($values as $value) {
+            $this->or($value);
+        }
+
+        return $this;
+    }
+
+    /**
      * @param string|Closure $value
      * @return HumanRegex
      */
@@ -365,6 +413,8 @@ class HumanRegex
     }
 
     /**
+     * Creates a new capture group.
+     *
      * @param Closure $closure
      * @return HumanRegex
      */
@@ -403,7 +453,19 @@ class HumanRegex
     {
         $matches = [];
 
-        preg_match($this->getRegex(), $haystack, $matches);
+        if ($this->globalMatch) {
+            preg_match_all($this->getRegex(), $haystack, $matches);
+        } else {
+            preg_match($this->getRegex(), $haystack, $matches);
+        }
+
+        /**
+         * When calling preg_match_all, we need to return the first index
+         * of the matches array.
+         */
+        if (!isset($matches[1]) && isset($matches[0]) && is_array($matches[0])) {
+            return $matches[0];
+        }
 
         return $matches;
     }
