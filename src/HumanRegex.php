@@ -13,6 +13,9 @@ class HumanRegex
     protected $globalMatch = false;
 
     /** @var string */
+    protected $method = "preg_match";
+
+    /** @var string */
     protected $prefixes = "";
 
     /** @var string */
@@ -79,6 +82,7 @@ class HumanRegex
     public function global()
     {
         $this->globalMatch = true;
+        $this->method = 'preg_match_all';
 
         return $this;
     }
@@ -453,11 +457,7 @@ class HumanRegex
     {
         $matches = [];
 
-        if ($this->globalMatch) {
-            preg_match_all($this->getRegex(), $haystack, $matches);
-        } else {
-            preg_match($this->getRegex(), $haystack, $matches);
-        }
+        call_user_func_array($this->method, [$this->getRegex(), $haystack, &$matches]);
 
         /**
          * When calling preg_match_all, we need to return the first index
