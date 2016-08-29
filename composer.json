@@ -1,0 +1,38 @@
+{
+    "name": "mpociot/human-regex",
+    "description": "Regular expressions for human beings, not machines",
+    "keywords": [
+        "human-regex"
+    ],
+    "homepage": "https://github.com/mpociot/human-regex",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Marcel Pociot",
+            "email": "m.pociot@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php" : ">=7.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "5.*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Mpociot\\HumanRegex\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Mpociot\\HumanRegex\\Test\\": "tests"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit"
+    },
+    "config": {
+        "sort-packages": true
+  }
+}
