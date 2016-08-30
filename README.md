@@ -50,7 +50,7 @@ Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
 
 ## Security
 
-If you discover any security related issues, please email freek@mpociot.be instead of using the issue tracker.
+If you discover any security related issues, please email m.pociot@gmai.com instead of using the issue tracker.
 
 ## Credits
 
