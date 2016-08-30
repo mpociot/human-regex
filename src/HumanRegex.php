@@ -27,6 +27,9 @@ class HumanRegex
     /** @var string */
     protected $lastValue;
 
+    /** @var int */
+    protected $openParenthesis = 0;
+
     /**
      * @return HumanRegex
      */
@@ -43,7 +46,6 @@ class HumanRegex
      */
     public function add($value) : HumanRegex
     {
-        $this->checkParenthesis($value);
         $this->expressionParts[] = $this->lastValue = $value;
 
         return $this;
@@ -57,9 +59,8 @@ class HumanRegex
      */
     protected function checkParenthesis($value = '')
     {
-        if (strpos($this->lastValue, ')|(?:') === 0 && (strpos($value, '(') === 0 || $value === '')) {
-            $this->add('))');
-        }
+        $this->expressionParts[] = str_repeat(')', $this->openParenthesis);
+        $this->openParenthesis = 0;
     }
 
     /**
@@ -174,7 +175,8 @@ class HumanRegex
      */
     public function either($value) : HumanRegex
     {
-        return $this->add('(?:(?:' . $this->getValue($value));
+        $this->openParenthesis++;
+        return $this->add('(?:' . $this->getValue($value));
     }
 
     /**
@@ -183,11 +185,7 @@ class HumanRegex
      */
     public function or($value) : HumanRegex
     {
-        $expression = ')';
-        if (substr($this->lastValue, -1) === ')') {
-            $expression = '';
-        }
-        return $this->add($expression . '|(?:' . $this->getValue($value));
+        return $this->add('|' . $this->getValue($value));
     }
 
     /**

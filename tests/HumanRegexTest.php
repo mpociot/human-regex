@@ -156,9 +156,8 @@ class ExampleTest extends \PHPUnit_Framework_TestCase
         $this->regex
             ->startOfString()
             ->find('foo')
-            ->maybe(function($regex){
-                return $regex->whitespace()
-                    ->find('bar');
+            ->maybe(function($r){
+                return $r->whitespace()->then('bar');
             })
             ->endOfString();
 
@@ -532,6 +531,34 @@ class ExampleTest extends \PHPUnit_Framework_TestCase
         $matches = $this->regex->findMatches('abecdfg');
 
         $this->assertSame('dfg', $matches[0]);
+    }
+
+    /** @test */
+    public function it_can_validate_multiple_patterns()
+    {
+        $a = HumanRegex::create()
+            ->digits()->exactly(3)
+            ->anyOf(array(".pdf", ".doc"));
+
+        $b = HumanRegex::create()
+            ->letters()->exactly(4)
+            ->then(".jpg");
+
+        $regExp = HumanRegex::create()
+            ->startOfString()
+            ->findEither($a)
+            ->or($b)
+            ->endOfString();
+        
+        $this->assertTrue($regExp->matches("123.pdf"));
+        $this->assertTrue($regExp->matches("456.doc"));
+        $this->assertTrue($regExp->matches("bbbb.jpg"));
+        $this->assertTrue($regExp->matches("aaaa.jpg"));
+
+        $this->assertFalse($regExp->matches("1234.pdf"));
+        $this->assertFalse($regExp->matches("123.gif"));
+        $this->assertFalse($regExp->matches("aaaaa.jpg"));
+        $this->assertFalse($regExp->matches("456.docx"));
     }
 
 }
