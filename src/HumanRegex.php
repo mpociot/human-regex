@@ -202,6 +202,28 @@ class HumanRegex
     }
 
     /**
+     * Match the previous expression more than once.
+     * Alias for multipleTimes()
+     *
+     * @return HumanRegex
+     */
+    public function moreThanOnce() : HumanRegex
+    {
+        return $this->multipleTimes();
+    }
+
+    /**
+     * Match the previous expression more than once.
+     *
+     * @return HumanRegex
+     */
+    public function zeroOrMore() : HumanRegex
+    {
+        $this->checkParenthesis();
+        return $this->add('*');
+    }
+
+    /**
      * Limit the previous expression to one occurrence.
      * @return HumanRegex
      */
@@ -272,7 +294,7 @@ class HumanRegex
      */
     public function digit() : HumanRegex
     {
-        return $this->add('(?:\\d)');
+        return $this->add('[0-9]');
     }
 
     /**
@@ -332,7 +354,7 @@ class HumanRegex
      */
     public function alphanumeric() : HumanRegex
     {
-        return $this->add('(?:[a-zA-Z0-9])');
+        return $this->add('[a-zA-Z0-9]');
     }
 
     /**
@@ -401,6 +423,44 @@ class HumanRegex
         }
 
         return $this;
+    }
+
+    /**
+     * Matches any of the given charactters.
+     *
+     * @param array|Closure $values
+     * @return HumanRegex
+     */
+    public function allowedCharacters($values) : HumanRegex
+    {
+        $expression = '';
+        if ($values instanceof Closure) {
+            $values = $values(new HumanRegex());
+        }
+
+        foreach ($values as $value) {
+            $expression .= str_replace(['[',']'], '', $this->getValue($value));
+        }
+        return $this->add('['.$expression.']');
+    }
+
+    /**
+     * Matches any other than the given charactters.
+     *
+     * @param array|Closure $values
+     * @return HumanRegex
+     */
+    public function notAllowedCharacters($values) : HumanRegex
+    {
+        $expression = '';
+        if ($values instanceof Closure) {
+            $values = $values(new HumanRegex());
+        }
+
+        foreach ($values as $value) {
+            $expression .= str_replace(['[',']'], '', $this->getValue($value));
+        }
+        return $this->add('[^'.$expression.']');
     }
 
     /**

@@ -476,4 +476,62 @@ class ExampleTest extends \PHPUnit_Framework_TestCase
         $this->assertSame('elitr.gif', $matches[2]);
     }
 
+    /** @test */
+    public function it_can_match_allowed_characters()
+    {
+        $this->regex
+            ->startOfString()
+            ->allowedCharacters(['-', '!', ' ', ',', "'", '"', '/', '@', '.', ':', '(', ')'])->moreThanOnce()
+            ->endOfString();
+
+        $text = '----! ,"@.:(.)';
+
+        $this->assertTrue($this->regex->matches($text));
+        $this->assertFalse($this->regex->matches('Th%is is invalid text %'));
+    }
+
+    /** @test */
+    public function it_can_match_allowed_characters_with_closure()
+    {
+        $this->regex
+            ->startOfString()
+            ->allowedCharacters(function(HumanRegex $r) {
+                return [$r->alphanumeric(), '-', '!', ' ', ',', "'", '"', '/', '@', '.', ':', '(', ')'];
+            })->moreThanOnce()
+            ->endOfString();
+
+        $text = 'amet.jpg, consetetur sadipscing.png elitr.gif';
+
+        $this->assertTrue($this->regex->matches($text));
+        $this->assertFalse($this->regex->matches('Th%is is invalid text %'));
+    }
+
+    /** @test */
+    public function it_can_match_zero_or_more()
+    {
+        $this->regex
+            ->startOfString()
+            ->allowedCharacters(function(HumanRegex $r) {
+                return [$r->alphanumeric()];
+            })->zeroOrMore()
+            ->endOfString();
+
+        $this->assertTrue($this->regex->matches(''));
+        $this->assertFalse($this->regex->matches('This is valid text'));
+    }
+
+    /** @test */
+    public function it_can_match_not_allowed_characters()
+    {
+        $this->regex
+            ->notAllowedCharacters(['a', 'b', 'c'])->exactly(3);
+
+        $this->assertTrue($this->regex->matches('abecdfg'));
+        $this->assertFalse($this->regex->matches('abc'));
+
+        $matches = $this->regex->findMatches('abecdfg');
+
+        $this->assertSame('dfg', $matches[0]);
+    }
+
 }
